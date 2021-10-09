@@ -1,0 +1,20 @@
+FROM python:3.8.12-slim
+
+EXPOSE 5000
+
+# start to install backend-end stuff
+RUN mkdir -p /app/data
+WORKDIR /app
+
+# Install Python requirements.
+COPY ["Pipfile", "Pipfile.lock", "./"]
+RUN pip install pipenv
+RUN pipenv install --deploy --system
+
+# Install Python requirements.
+COPY ["Q4_server.py", "./"]
+COPY ["data/dv.bin", "./data"]
+COPY ["data/model1.bin", "./data"]
+
+# Start server
+ENTRYPOINT ["gunicorn", "--bind", "0.0.0.0:5000", "Q4_server:app"]

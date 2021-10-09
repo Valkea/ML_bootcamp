@@ -1,0 +1,27 @@
+Start pipenv virtual environment:
+>> pipenv shell
+
+
+Start Flask development server:
+(venv) >> python Q4_server.py
+
+Start gunicorn production server:
+(venv) >> gunicorn --bind 0.0.0.0:5000 Q4_server:app
+
+
+Build Docker image from agrigorev/zoomcamp-model:3.8.12-slim:
+>> docker build -t churn-prediction .
+
+Build Docker image from python:3.8.12-slim:
+>> docker build -t churn-prediction2 . -f Dockerfile2
+
+
+Run docker images:
+>> docker run -it -p 5000:5000 churn-prediction:latest
+or 
+>> docker run -it -p 5000:5000 churn-prediction2:latest
+
+
+Run POST request scripts:
+>> python Q4_client.py
+>> python Q6_client.py
