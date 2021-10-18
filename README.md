@@ -11,3 +11,5 @@ Week 3. Machine Learning for Classification
 Week 4. Evaluation Metrics for Classification
 
 Week 5. Deploying Machine Learning Models
+
+Week 6. Decision Trees, Random Forests, XGBoost
