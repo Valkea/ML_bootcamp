@@ -13,3 +13,7 @@ Week 4. Evaluation Metrics for Classification
 Week 5. Deploying Machine Learning Models
 
 Week 6. Decision Trees, Random Forests, XGBoost
+
+Week 7. Home-Work Project
+
+Week 8. Convolutional Neural Networks, Transfer Learning, Deep Learning
