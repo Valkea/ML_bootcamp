@@ -11,7 +11,7 @@ COPY ["Pipfile", "Pipfile.lock", "./"]
 RUN pip install pipenv
 RUN pipenv install --deploy --system
 
-# Install Python requirements.
+# Copy Script
 COPY ["Q5_server.py", "./"]
 
 # Start server
