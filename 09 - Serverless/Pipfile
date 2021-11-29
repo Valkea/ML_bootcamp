@@ -1,0 +1,14 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+tflite-runtime = {file = "https://github.com/alexeygrigorev/tflite-aws-lambda/blob/main/tflite/tflite_runtime-2.7.0-cp38-cp38-linux_x86_64.whl?raw=true"}
+pillow = "*"
+numpy = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
