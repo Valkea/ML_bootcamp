@@ -1,8 +1,14 @@
+
+## AWS CLIENT ##
+
 >>> pip install awscli
 
 # get credentials here : https://console.aws.amazon.com/iam/home?region=eu-west-1#/security_credentials
 # then use them (required only once)
 >>> aws configure
+
+
+## AWS ELASTIC CONTAINER REGISTRY ##
 
 >>> aws ecr create-repository --repository-name dogs-cats
 # there is the repo URI in the response
@@ -16,6 +22,55 @@
 >>> docker push RETURNED_REPO_URI:dogs-cats-v2
 
 # The image should appears here: https://eu-west-1.console.aws.amazon.com/ecr/repositories?region=eu-west-1
-# Then the image can be used to initialize a Lambda from this docker image
-# And finally once mounted, the model can be test with a test sending an url parameter with a test image
 
+
+## AWS LAMBDA ##
+
+# Go to https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/functions
+# Create a "Function" from "Container image" ---> The image sent to ECR should appear with "Browse"
+# Create a "Test" --> {"url": "https://bit.ly/3rlUufB"} for this project 
+
+
+## AWS API GATEWAY ##
+
+# Go to https://eu-west-1.console.aws.amazon.com/apigateway/main/apis?region=eu-west-1
+# Select "build" REST API
+# Create a "New API"
+# Create a "Ressource" (Actions/Create Ressource) --> "/predict" is a good choice in this case
+# Create a "Method" (Actions/Create Method) --> "POST/Lambda Function" is what we need on this project
+# Create a "Test" (click on POST/Test) --> {"url": "https://bit.ly/3rlUufB"} for this project
+# Deploy API (Actions/Deploy API) --> "New Stage" (this is part of the generated url)
+# Access the lambda function using the given "Invoke URL" plus the previous POST ressource nameS --> e.g. https://xxxxxxxxxx.execute-api.eu-west-1.amazonaws.com/stage_name/predict
+
+
+## AWS API GATEWAY SECURITY ###
+
+# Add "Ressource Policy" (left menu on the API panel) --> here is an example with fake IP to ALLOW
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "execute-api:Invoke",
+            "Resource": "arn:aws:execute-api:eu-west-1:807818147787:zvdeeqox1g/*/*/*"
+        },
+        {
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "execute-api:Invoke",
+            "Resource": "arn:aws:execute-api:eu-west-1:807818147787:zvdeeqox1g/*/*/*",
+            "Condition": {
+                "NotIpAddress": {
+                    "aws:SourceIp": [
+                        "52.95.36.0/22",
+                        "15.230.39.196/31",
+                        "52.93.178.219/32"
+                    ]
+                }
+            }
+        }
+    ]
+}
+
+# Then deploy the API again (Actions/Deploy API) --> same name as before
