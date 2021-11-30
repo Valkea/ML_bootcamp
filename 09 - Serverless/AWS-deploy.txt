@@ -1,0 +1,21 @@
+>>> pip install awscli
+
+# get credentials here : https://console.aws.amazon.com/iam/home?region=eu-west-1#/security_credentials
+# then use them (required only once)
+>>> aws configure
+
+>>> aws ecr create-repository --repository-name dogs-cats
+# there is the repo URI in the response
+
+>>> $(aws ecr get-login --no-include-email)
+# this logins to AWS docker space
+
+>>> docker build -t dogs-cats .
+>>> docker run -it --rm -p 8080:8080 dogs-cats:latest # just to check it runs
+>>> docker tag dogs-cats:latest RETURNED_REPO_URI:dogs-cats-v2
+>>> docker push RETURNED_REPO_URI:dogs-cats-v2
+
+# The image should appears here: https://eu-west-1.console.aws.amazon.com/ecr/repositories?region=eu-west-1
+# Then the image can be used to initialize a Lambda from this docker image
+# And finally once mounted, the model can be test with a test sending an url parameter with a test image
+
