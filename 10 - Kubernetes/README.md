@@ -1,41 +1,6 @@
-## 10.11 Homework
 
 In this homework, we'll deploy the churn preduction model from session 5.
-We already have a docker image for this model - we'll use it for 
-deploying the model to Kubernetes.
-
-
-## Bulding the image
-
-Clone the course repo if you haven't, then go to the `churn-code` folder and 
-execute the following:
-
-
-```bash
-docker build -t churn-model:v001 .
-```
-
-Run it to test that it's working locally:
-
-```bash
-docker run -it --rm -p 9696:9696 churn-model:v001
-```
-
-And in another terminal, execute `predict-test.py` file:
-
-```bash
-python predict-test.py
-```
-
-You should see this:
-
-```
-{'churn': False, 'churn_probability': 0.3257561103397851}
-not sending promo email to xyz-123
-```
-
-Now you can stop the container running in Docker.
-
+We already have a docker image for this model - we'll use it for deploying the model to Kubernetes.
 
 ## Installing `kubectl` and `kind`
 
@@ -44,6 +9,111 @@ You need to install:
 * `kubectl` - https://kubernetes.io/docs/tasks/tools/ (you might already have it - check before installing)
 * `kind` - https://kind.sigs.k8s.io/docs/user/quick-start/
 
+# Step by step process
+
+## 1. Building the image
+
+Clone the course repo if you haven't, and execute the following:
+
+```bash
+>> cd churn-code
+>> docker build -t churn-model:v001 .
+```
+
+Run it to test that it's working locally:
+
+```bash
+>> docker run -it --rm -p 9696:9696 churn-model:v001
+```
+
+And in another terminal, execute `predict-test.py` file:
+
+```bash
+>> python predict-test.py
+```
+
+One should see this:
+
+```
+{'churn': False, 'churn_probability': 0.3257561103397851}
+not sending promo email to xyz-123
+```
+
+Now the container running in Docker can be stopped (CTRL + C),
+and let's move back to the root folder (for the incoming commands):
+```bash
+>> cd ..
+```
+
+
+## 2. Run local Kubernetes Cluster
+
+First, let's create a local cluster and check that it is actually running:
+```bash
+>> kind create cluster
+>> kubectl cluster--info
+```
+
+Then one can also check the running services, deployements and pods with:
+```bash
+>> kubectl get service	# returns 1 service at that point (an INTERNAL aka `Cluster IP`)
+>> kubectl get deployment	# returns 0 deployement at that point
+>> kubectl get pod		# returns 0 pod at that point
+```
+
+## 3. Add a deployment and a pod
+
+```bash
+>> kubectl apply -f kube-config/deployment.yaml
+```
+
+```bash
+>> kubectl get deployment	# returns 1 deployement at that point
+>> kubectl get pod		# returns 1 pod at that point
+```
+
+## 4. Add a service
+
+```bash
+>> kubectl apply -f kube-config/service.yaml
+```
+
+```bash
+>> kubectl get service	# returns 2 services at that point (an INTERNAL aka `Cluster IP`, and an EXTERNAL aka `LoadBalancer`)
+```
+
+## 5. Testing the service locally
+
+We can do it by forwarding the 9696 port on our computer to the port 80 on the service:
+
+```bash
+>> kubectl port-forward service/churn 9696:80
+```
+
+And in another terminal, execute `predict-test.py` file:
+
+```bash
+>> python churn-code/predict-test.py
+```
+
+One should see this:
+
+```
+{'churn': False, 'churn_probability': 0.3257561103397851}
+not sending promo email to xyz-123
+```
+
+## 6. Shutting down
+
+```bash
+>> kubectl delete -f kube-config/deployment.yaml
+>> kubectl delete -f kube-config/service.yaml
+>> kind delete cluster
+```
+
+
+# Homework questions & answers
+
 
 ## Question 1: Version of kind
 
@@ -51,16 +121,8 @@ What's the version of `kind` that you have?
 
 Use `kind --version` to find out.
 
-### My answer: `kind v0.11.1 go1.16.4 linux/amd64`
+#### My answer: `kind v0.11.1 go1.16.4 linux/amd64`
 
-
-## Creating a cluster
-
-Now let's create a cluster with `kind`:
-
-```bash
-kind create cluster
-```
 
 ## Question 2: Verifying that everything works
 
@@ -78,7 +140,7 @@ we need to register it with kind.
 
 What's the command we need to run for that?
 
-### My answer: `kind load docker-image churn-model:v001`
+#### My answer: `kind load docker-image churn-model:v001`
 
 
 ## Question 4: Creating a deployment
@@ -114,7 +176,7 @@ Replace `<Image>` and `<Port>` with the correct values.
 
 What is the value for `<Port>`?
 
-### My answer: `9696` (see deployement.yaml in the kube-config folder)
+#### My answer: `9696` (see deployement.yaml in the kube-config folder)
 
 
 ## Question 5: Pod name
@@ -128,7 +190,7 @@ kubectl apply -f deployment
 Now get a list of running pods.
 What's the name of the pod that just started? 
 
-### My answer: `kubectl get pod` returns `churn-8449c67c88-khzkh`
+#### My answer: `kubectl get pod` returns `churn-8449c67c88-khzkh`
 
 
 ## Question 6: Creating a service 
@@ -152,15 +214,4 @@ spec:
 Fill it in. What do we need to write instead of `<???>`?
 Apply this config file.
 
-### My answer: `churn` in both `metadata.name` and `spec.selector.app`
-
-
-## Testing the service locally
-
-We can do it by forwarding the 9696 port on our computer to the port 80 on the service:
-
-```bash
-kubectl port-forward service/churn 9696:80
-```
-
-Run `predict-test.py` from session 5 to verify that everything is working.
+#### My answer: `churn` in both `metadata.name` and `spec.selector.app`
